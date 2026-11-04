@@ -1,0 +1,28 @@
+.sticky-indicators {
+  position: fixed;
+  right: 4px;
+  bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 12px;
+  border: 1px solid rgb(255 255 255 / 18%);
+  border-radius: 15px;
+  background: rgb(42 48 57 / 88%);
+  box-shadow: 0 2px 8px rgb(0 0 0 / 35%);
+  pointer-events: none;
+}
+
+.sticky-indicator {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  color: rgb(170 173 179);
+  font-family: "Segoe UI Symbol", "Segoe UI", sans-serif;
+}
+
+.sticky-indicator--locked { color: white; }
+.sticky-indicator__symbol { font-family: "Segoe UI", sans-serif; font-size: 19px; font-weight: 600; line-height: 1; }
+.sticky-indicator__symbol--shift { font-family: "Segoe UI Symbol", sans-serif; font-size: 34px; font-weight: 400; }
+.sticky-indicator__windows { width: 27px; height: 27px; }

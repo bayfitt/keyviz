@@ -1,59 +1,55 @@
-import { KeyOverlay } from "@/components/key-overlay";
-import { MouseOverlay } from "@/components/mouse-overlay";
-import { KEY_EVENT_STORE, KeyEventStore, useKeyEvent } from "@/stores/key_event";
-import { KEY_STYLE_STORE, KeyStyleStore, useKeyStyle } from '@/stores/key_style';
-import { listenForUpdates } from '@/stores/sync';
-import { EventPayload } from "@/types/event";
-import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
-import { useEffect, useState, } from "react";
+import { useEffect, useState } from "react";
+import "./sticky-indicator.css";
 
+type Modifier = "Shift" | "Ctrl" | "Alt" | "Win";
+type ModifierState = "pressed" | "latched" | "locked";
+
+export type StickyIndicator = {
+  key: Modifier;
+  state: ModifierState;
+};
+
+const labels: Record<Modifier, { symbol: string; name: string }> = {
+  Shift: { symbol: "⇧", name: "Shift" },
+  Ctrl: { symbol: "Ctrl", name: "Control" },
+  Alt: { symbol: "Alt", name: "Alt" },
+  Win: { symbol: "", name: "Windows" },
+};
+
+/** The backend emits the complete current state, including an empty array. */
 export function Visualization() {
-  const monitor = useKeyStyle((state) => state.appearance.monitor);
-  const onEvent = useKeyEvent((state) => state.onEvent);
-  const tick = useKeyEvent((state) => state.tick);
-
-  // listening for input events
-  const [isListening, setIsListening] = useState(true);
+  const [modifiers, setModifiers] = useState<StickyIndicator[]>([]);
 
   useEffect(() => {
-    const unlistenPromises = [
-      // ───────────── input event listener ─────────────
-      listen<EventPayload>("input-event", (event) => onEvent(event.payload)),
-      // ───────────── store sync ─────────────
-      listenForUpdates<KeyEventStore>(KEY_EVENT_STORE, useKeyEvent.setState),
-      listenForUpdates<KeyStyleStore>(KEY_STYLE_STORE, useKeyStyle.setState),
-      // ───────────── settings window open/close ─────────────
-      listen<boolean>("settings-window", (event) => {
-        useKeyEvent.setState({ settingsOpen: event.payload });
-      }),
-      // ───────────── listener toggle ─────────────
-      listen<boolean>("listening-toggle", (event) => setIsListening(event.payload)),
+    const subscriptions = [
+      listen<StickyIndicator[]>("sticky-state", ({ payload }) => setModifiers(payload)),
     ];
-    const id = setInterval(tick, 250);
-
     return () => {
-      clearInterval(id);
-      unlistenPromises.forEach((p) => p.then((f) => f()));
+      subscriptions.forEach((subscription) => subscription.then((unlisten) => unlisten()));
     };
   }, []);
 
-  useEffect(() => {
-    const set_monitor = async () => {
-      if (!monitor) return;
-      try {
-        await invoke("set_main_window_monitor", { monitorName: monitor });
-      } catch (error) {
-        console.error("Failed to set monitor:", error);
-      }
-    }
-    set_monitor();
-  }, [monitor]);
+  if (modifiers.length === 0) return null;
 
-  if (!isListening) return null;
-
-  return <div className="w-screen h-screen relative overflow-hidden">
-    <MouseOverlay />
-    <KeyOverlay />
-  </div>;
+  return (
+    <div className="sticky-indicators" aria-live="polite" aria-label="Active modifier keys">
+      {modifiers.map(({ key, state }) => (
+        <div
+          className={`sticky-indicator sticky-indicator--${state}`}
+          key={key}
+          aria-label={`${labels[key].name}: ${state}`}
+          title={`${labels[key].name}: ${state}`}
+        >
+          {key === "Win" ? (
+            <svg className="sticky-indicator__windows" viewBox="0 0 24 24" aria-hidden="true">
+              <path fill="currentColor" d="M1 1h10v10H1zM13 1h10v10H13zM1 13h10v10H1zM13 13h10v10H13z" />
+            </svg>
+          ) : (
+            <span className={`sticky-indicator__symbol ${key === "Shift" ? "sticky-indicator__symbol--shift" : ""}`} aria-hidden="true">{labels[key].symbol}</span>
+          )}
+        </div>
+      ))}
+    </div>
+  );
 }

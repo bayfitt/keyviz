@@ -3,16 +3,19 @@
         "windows": [
             {
                 "label": "main",
-                "title": "Keyviz",
+                "title": "Sticky Modifier Indicator",
                 "alwaysOnTop": true,
                 "skipTaskbar": true,
-                "decorations": true,
+                "decorations": false,
                 "titleBarStyle": "Overlay",
                 "hiddenTitle": true,
                 "transparent": true,
                 "focus": false,
                 "focusable": false,
-                "fullscreen": true,
+                "fullscreen": false,
+                "resizable": false,
+                "width": 256,
+                "height": 78,
                 "visible": false
             }
         ]
