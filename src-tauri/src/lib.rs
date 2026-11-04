@@ -10,7 +10,6 @@ use tauri::{
 
 mod app;
 use app::commands::{log, set_main_window_monitor, set_toggle_shortcut};
-use app::event::start_listener;
 use app::state::AppState;
 use app::window::config_window;
 
@@ -36,14 +35,14 @@ pub fn run() {
 
             // tray actions
             let toggle_item = MenuItem::with_id(app, "toggle", "Stop", true, None::<&str>)?;
-            let settings_item = MenuItem::with_id(app, "settings", "Settings", true, None::<&str>)?;
             let quit_item = MenuItem::with_id(app, "quit", "Quit", true, None::<&str>)?;
 
             // start global input listener
-            start_listener(app_handle.clone(), toggle_item.clone());
+            #[cfg(target_os = "windows")]
+            app::sticky::start(app_handle.clone());
 
             // setup tray menu
-            let menu = Menu::with_items(app, &[&toggle_item, &settings_item, &quit_item])?;
+            let menu = Menu::with_items(app, &[&toggle_item, &quit_item])?;
             let _ = TrayIconBuilder::with_id("keyviz-tray")
                 .icon(Image::from(include_image!("icons/tray.png")))
                 .menu(&menu)

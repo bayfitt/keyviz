@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "keyviz",
-  "version": "2.1.1",
-  "identifier": "org.keyviz",
+  "productName": "Sticky Modifier Indicator",
+  "version": "0.1.0",
+  "identifier": "com.bayfitt.stickyindicator",
   "build": {
     "beforeDevCommand": "npm run dev",
     "devUrl": "http://localhost:1420",
@@ -29,6 +29,7 @@
   },
   "bundle": {
     "active": true,
+    "publisher": "Ben Fitterman",
     "targets": "all",
     "icon": [
       "icons/32x32.png",
